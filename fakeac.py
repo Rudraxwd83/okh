@@ -7,6 +7,7 @@ import json
 import hashlib
 from faker import Faker
 import re
+import time
 
 print(f"""
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓           
@@ -68,12 +69,12 @@ def check_mail_tm_inbox(email, password, proxy=None):
         if response.status_code == 200:
             messages = response.json()['hydra:member']
             for message in messages:
-                # Process each message to find the confirmation code
                 subject = message['subject']
                 body = message['content']
                 print(f"Subject: {subject}")
                 confirmation_code = extract_confirmation_code(body)
                 if confirmation_code:
+                    print(f'[✓] Confirmation Code: {confirmation_code}')
                     return confirmation_code
         else:
             print(f'[×] Error retrieving messages: {response.text}')
@@ -87,22 +88,6 @@ def extract_confirmation_code(email_body):
     if match:
         return match.group(1)
     return None
-
-def confirm_registration(email, confirmation_code, proxy=None):
-    # Placeholder for the actual API endpoint and parameters
-    url = "https://b-api.facebook.com/method/user.confirm_registration"
-    data = {
-        'email': email,
-        'confirmation_code': confirmation_code
-    }
-    try:
-        response = requests.post(url, json=data, proxies=proxy)
-        if response.status_code == 200:
-            print(f'[✓] Registration confirmed for {email}')
-        else:
-            print(f'[×] Error confirming registration: {response.text}')
-    except Exception as e:
-        print(f'[×] Error: {e}')
 
 def register_facebook_account(email, password, first_name, last_name, birthday, proxy=None):
     api_key = '882a8490361da98702bf97a021ddc14d'
@@ -138,8 +123,9 @@ def register_facebook_account(email, password, first_name, last_name, birthday, 
     confirmation_code = check_mail_tm_inbox(email, password, proxy)
     
     if confirmation_code:
-        # Confirm the registration with the confirmation code
-        confirm_registration(email, confirmation_code, proxy)
+        print(f'[✓] Confirmation Code: {confirmation_code}')
+        print(f'Please confirm the account manually using this code.')
+        input('Press Enter after confirming the account...')
     
     # Print account details
     id = reg.get('new_user_id', 'Unknown')
